@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Weather Advisor</title>
+    <!-- Bootstrap core CSS -->
+    <link
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+            integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+            crossorigin="anonymous"
+    />
+</head>
+<body>
+
+
+<div class="row justify-content-center">
+    <div class="col-md-8 p-5">
+        <div class="card">
+            <div class="card-header">Где ты живешь?</div>
+
+            <div class="card-body">
+
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    {% for field in form %}
+                    <div class="form-group row" aria-required="{% if field.required %}true{% else %}false
+                            {% endif %}">
+                        <label for="{{ field.id_for_label }}" class="col-md-4 col-form-label text-md-right">
+                            {{ field.label }}{% if field.field.required %}<span class="required">*</span>{% endif %}
+                        </label>
+                        <div class="col-md-6">
+                            {{ field }}
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="col-md-6 offset-md-4">
+                        <button type="submit" class="btn btn-primary">
+                            Узнать погоду
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8 p-5">
+
+
+        {% if error %}
+        <ul class="alert alert-danger" role="alert">
+            <li>{{ error.code }} : {{ error.message|escape }}</li>
+        </ul>
+        {% else %}
+        <div class="alert alert-primary" role="alert">
+            <p><img src="http://openweathermap.org/img/w/{{ icon_code }}.png">{{ weather }}</p>
+            <p>Температура: {{ temp }}°, ощущается как {{ feels_like }}°</p>
+            <p>Сегодня от {{ temp_min }}° до {{ temp_max }}°</p>
+            <p>Влажность {{ humidity }}%</p>
+            <br>
+            <p>Рекомендация: {{ recommendation }}</p>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+</body>
+</html>
