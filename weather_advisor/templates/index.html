@@ -55,16 +55,18 @@
 
         {% if error %}
         <ul class="alert alert-danger" role="alert">
-            <li>{{ error.code }} : {{ error.message|escape }}</li>
+            <li>{{ error.message|escape }}</li>
         </ul>
-        {% else %}
+        {% endif %}
+
+        {% if weather_data %}
         <div class="alert alert-primary" role="alert">
-            <p><img src="http://openweathermap.org/img/w/{{ icon_code }}.png">{{ weather }}</p>
-            <p>Температура: {{ temp }}°, ощущается как {{ feels_like }}°</p>
-            <p>Сегодня от {{ temp_min }}° до {{ temp_max }}°</p>
-            <p>Влажность {{ humidity }}%</p>
+            <p><img src="http://openweathermap.org/img/w/{{ weather_data.icon_code }}.png">{{ weather_data.weather }}</p>
+            <p>Температура: {{ weather_data.temp }}°, ощущается как {{ weather_data.feels_like }}°</p>
+            <p>Сегодня от {{ weather_data.temp_min }}° до {{ weather_data.temp_max }}°</p>
+            <p>Влажность {{ weather_data.humidity }}%</p>
             <br>
-            <p>Рекомендация: {{ recommendation }}</p>
+            <p>Рекомендация: {{ weather_data.recommendation }}</p>
         </div>
         {% endif %}
 
