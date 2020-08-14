@@ -59,16 +59,20 @@
         </ul>
         {% endif %}
 
-        {% if weather_data %}
-        <div class="alert alert-primary" role="alert">
-            <p><img src="http://openweathermap.org/img/w/{{ weather_data.icon_code }}.png">{{ weather_data.weather }}</p>
-            <p>Температура: {{ weather_data.temp }}°, ощущается как {{ weather_data.feels_like }}°</p>
-            <p>Сегодня от {{ weather_data.temp_min }}° до {{ weather_data.temp_max }}°</p>
-            <p>Влажность {{ weather_data.humidity }}%</p>
-            <br>
-            <p>Рекомендация: {{ weather_data.recommendation }}</p>
+
+        {% for locate in weather_data %}
+        <div class="card border-dark mb-3">
+            <div class="card-header">{{ locate.formatted_address }}</div>
+            <div class="card-body">
+                <p><img src="http://openweathermap.org/img/w/{{ locate.icon_code }}.png">{{ locate.weather }}</p>
+                <p>Температура {{ locate.temp }}°, ощущается как {{ locate.feels_like }}°</p>
+                <p>Сегодня от {{ locate.temp_min }}° до {{ locate.temp_max }}°</p>
+                <p>Влажность {{ locate.humidity }}%</p><br>
+                <p>Скорость ветра {{ locate.wind_speed }} м/с</p><br>
+                <p>Рекомендация: {{ locate.recommendation }}</p>
+            </div>
         </div>
-        {% endif %}
+        {% endfor %}
 
     </div>
 </div>

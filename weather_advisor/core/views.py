@@ -24,34 +24,36 @@ def weather_recommendation(code_weather):
 
 def get_coordinate_by_address(address):
     url = "https://maps.googleapis.com/maps/api/geocode/json"
-
     parameters = {
         'address': address,
-        'key': settings.GOOGLE_API_KEY
+        'key': settings.GOOGLE_API_KEY,
+        'language': 'ru'
     }
-
     try:
         response = requests.get(url, parameters)
-
         if response.status_code == 200:
             answer = json.loads(response.text)
             if answer['status'] == 'ZERO_RESULTS':
                 return {'error': f'Адрес {address} не найдет!'}
-            lat = answer['results'][0]['geometry']['location']['lat']
-            lon = answer['results'][0]['geometry']['location']['lng']
-            return {'lat': lat, 'lon': lon}
-        return {'error': 'Ошибка превращения адреса в координаты'}
 
+            coordinates = []
+            for result in answer['results']:
+                formatted_address = result['formatted_address']
+                lat = result['geometry']['location']['lat']
+                lon = result['geometry']['location']['lng']
+                coordinates.append({'lat': lat, 'lon': lon, 'formatted_address': formatted_address})
+            return coordinates
+        return {'error': 'Ошибка превращения адреса в координаты'}
     except requests.ConnectionError:
         return {'error': 'Ошибка соединения с интернет, не могу адрес превратить в координаты'}
 
 
-def get_weather_by_coordinates(coordinates):
+def get_weather_by_coordinates(coordinate):
     url = 'https://api.openweathermap.org/data/2.5/weather'
 
     parameters = {
-        'lat': coordinates['lat'],
-        'lon': coordinates['lon'],
+        'lat': coordinate['lat'],
+        'lon': coordinate['lon'],
         'appid': settings.OPENWEATHERMAP_API_KEY,
         'lang': 'ru',
         'units': 'metric'
@@ -71,6 +73,7 @@ def get_weather_by_coordinates(coordinates):
             temp_min = answer['main']['temp_min']
             temp_max = answer['main']['temp_max']
             humidity = answer['main']['humidity']
+            wind_speed = answer['wind']['speed']
 
             return {
                 'weather': weather,
@@ -80,8 +83,10 @@ def get_weather_by_coordinates(coordinates):
                 'temp_min': temp_min,
                 'temp_max': temp_max,
                 'humidity': humidity,
-                'recommendation': recommendation
-                }
+                'recommendation': recommendation,
+                'wind_speed': wind_speed,
+                'formatted_address': coordinate['formatted_address']
+            }
     except requests.ConnectionError:
         return {"error": 'Ошибка сети, '
                          'проверьте подключение '
@@ -93,24 +98,24 @@ def main_view(request):
     if request.method == 'POST':
         form = WeatherAdvisorForm(request.POST)
         if form.is_valid():
-            address = []
-            address.append(form.cleaned_data['country'])
-            address.append(form.cleaned_data['region'])
-            address.append(form.cleaned_data['city'])
+            address = ','.join(filter(lambda x: x, (form.cleaned_data['country'],
+                                                    form.cleaned_data['region'],
+                                                    form.cleaned_data['city'])))
 
-            coordinates = get_coordinate_by_address(','.join(address))
+            coordinates = get_coordinate_by_address(address)
 
             if 'error' in coordinates:
                 return render(request, 'index.html', {'form': form, 'error': {
                     'message': coordinates['error']}})
 
-            weather_data = get_weather_by_coordinates(coordinates)
-
-            if 'error' in weather_data:
-                return render(request, 'index.html', {'form': form, 'error': {
-                    'message': weather_data['error']}})
-
+            weather_data = []
+            for coordinate in coordinates:
+                weather = get_weather_by_coordinates(coordinate)
+                if 'error' in weather:
+                    return render(request, 'index.html', {'form': form, 'error': {
+                        'message': weather_data['error']}})
+                weather_data.append(weather)
             return render(request, 'index.html', {'form': form, 'weather_data': weather_data})
-
+        return render(request, 'index.html', {'form': form, 'error': 'Ошибка валидации формы'})
     form = WeatherAdvisorForm()
     return render(request, 'index.html', {'form': form})
