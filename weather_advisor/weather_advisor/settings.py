@@ -114,6 +114,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+
+# токены оставил, что можно было проверить работоспосбность проекта!
 OPENWEATHERMAP_API_KEY = '22f1d4a9429b0cb03c9157af1809c6ce'
 
 GOOGLE_API_KEY = 'AIzaSyADwnVyNYkC5AXQND-YR_SKbNIAz5DOjvI'
